@@ -2,14 +2,26 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AuthorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use Symfony\Component\Validator\Constraints as Assert;
+
 #[ORM\Entity(repositoryClass: AuthorRepository::class)]
-#[ApiResource]
+#[ApiResource(security: "is_granted('ROLE_USER')")]
+#[GetCollection]
+#[Post(security: "is_granted('ROLE_LIBRAIRIAN')")]
+#[Get]
+#[Put(security: "is_granted('ROLE_LIBRAIRIAN')")]
+#[Delete(security: "is_granted('ROLE_ADMIN')")]
 class Author
 {
     #[ORM\Id]
@@ -18,12 +30,24 @@ class Author
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: "Le prénom ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $lastName = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Type(\DateTimeInterface::class, message: "La date de naissance doit être une date valide.")]
+    #[Assert\LessThan("today", message: "La date de naissance ne peut pas être dans le futur.")]
     private ?\DateTime $birthDate = null;
 
     /**
