@@ -8,16 +8,22 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
-#[ApiResource(security: "is_granted('ROLE_USER')")]
+#[ApiResource(
+    normalizationContext: ['groups' => ['category:read']],
+    denormalizationContext: ['groups' => ['category:write']],
+    security: "is_granted('ROLE_USER')"
+)]
 #[GetCollection]
 #[Post(security: "is_granted('ROLE_LIBRAIRIAN')")]
 #[Get]
@@ -28,6 +34,7 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['category:read', 'book:read', 'author:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
@@ -36,6 +43,7 @@ class Category
         max: 100,
         maxMessage: "Le nom de la catégorie ne peut pas dépasser {{ limit }} caractères."
     )]
+    #[Groups(['category:read', 'category:write', 'book:read', 'author:read'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -43,12 +51,14 @@ class Category
         max: 5000,
         maxMessage: "La description ne peut pas dépasser {{ limit }} caractères."
     )]
+    #[Groups(['category:read', 'category:write'])]
     private ?string $description = null;
 
     /**
      * @var Collection<int, Book>
      */
     #[ORM\ManyToMany(targetEntity: Book::class, mappedBy: 'categories')]
+    #[Groups(['category:read'])]
     private Collection $books;
 
     public function __construct()

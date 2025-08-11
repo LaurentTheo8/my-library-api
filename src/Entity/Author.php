@@ -7,16 +7,22 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AuthorRepository::class)]
-#[ApiResource(security: "is_granted('ROLE_USER')")]
+#[ApiResource(
+    normalizationContext: ['groups' => ['author:read']],
+    denormalizationContext: ['groups' => ['author:write']],
+    security: "is_granted('ROLE_USER')"
+)]
 #[GetCollection]
 #[Post(security: "is_granted('ROLE_LIBRAIRIAN')")]
 #[Get]
@@ -27,6 +33,7 @@ class Author
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['author:read', 'author:write', 'book:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
@@ -35,6 +42,7 @@ class Author
         max: 100,
         maxMessage: "Le prénom ne peut pas dépasser {{ limit }} caractères."
     )]
+    #[Groups(['author:read', 'author:write', 'book:read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
@@ -43,17 +51,20 @@ class Author
         max: 255,
         maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
     )]
+    #[Groups(['author:read', 'author:write', 'book:read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(nullable: true)]
     #[Assert\Type(\DateTimeInterface::class, message: "La date de naissance doit être une date valide.")]
     #[Assert\LessThan("today", message: "La date de naissance ne peut pas être dans le futur.")]
+    #[Groups(['author:read', 'author:write'])]
     private ?\DateTime $birthDate = null;
 
     /**
      * @var Collection<int, Book>
      */
     #[ORM\OneToMany(targetEntity: Book::class, mappedBy: 'author')]
+    #[Groups(['author:read'])]
     private Collection $books;
 
     public function __construct()
