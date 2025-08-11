@@ -2,6 +2,8 @@
 namespace App\OpenApi;
 
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use ApiPlatform\OpenApi\Model\Schema;
 use ApiPlatform\OpenApi\OpenApi;
 
 use ArrayObject;
@@ -24,13 +26,30 @@ class OpenApiFactory implements OpenApiFactoryInterface
         if ($pathItem) {
             $operation = $pathItem->getPost();
 
+            $schema = new Schema();
+
+            $schema['type'] = 'object';
+            $schema['properties'] = new ArrayObject([
+                'username' => ['type' => 'string'],
+                'password' => ['type' => 'string'],
+            ]);
+            $schema['required'] = ['username', 'password'];
+
+            $requestBody = new RequestBody(
+                description: "Data to create admin user",
+                content: new ArrayObject([
+                    'application/json' => new ArrayObject([
+                        'schema' => $schema,
+                    ]),
+                ])
+            );
+
             $newOperation = $operation
                 ->withSummary('Create an admin user (cheat endpoint)')
-                ->withDescription('Special route to create an administrator account to initialize the project.');
+                ->withDescription('Special route to create an administrator account to initialize the project.')
+                ->withRequestBody($requestBody);
 
             $paths->addPath('/api/create-admin', $pathItem->withPost($newOperation));
-
-
         }
 
         return $openApi;
