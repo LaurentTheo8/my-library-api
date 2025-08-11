@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
+use App\Controller\UserController;
 use App\State\UserProcessor;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -41,6 +42,13 @@ use App\State\UserProcessor;
     uriTemplate: '/create-admin',
     security: "is_granted('PUBLIC_ACCESS')",
     name: 'user_create_admin',
+)]
+#[Get(
+    uriTemplate: '/me',
+    controller: UserController::class,
+    read: false,
+    name: 'user_me',
+    security: "is_granted('ROLE_USER')"
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
