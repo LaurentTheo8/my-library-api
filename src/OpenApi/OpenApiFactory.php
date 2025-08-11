@@ -30,7 +30,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
 
             $schema['type'] = 'object';
             $schema['properties'] = new ArrayObject([
-                'username' => ['type' => 'string'],
+                'email' => ['type' => 'string', 'format' => 'email'],
                 'password' => ['type' => 'string'],
             ]);
             $schema['required'] = ['username', 'password'];
