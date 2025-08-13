@@ -25,6 +25,10 @@ use ApiPlatform\Metadata\Delete;
     security: "is_granted('ROLE_USER')"
 )]
 #[GetCollection]
+#[GetCollection(
+    uriTemplate: '/books/all',
+    paginationEnabled: false
+)]
 #[Post(security: "is_granted('ROLE_LIBRAIRIAN')")]
 #[Get]
 #[Put(security: "is_granted('ROLE_LIBRAIRIAN')")]
